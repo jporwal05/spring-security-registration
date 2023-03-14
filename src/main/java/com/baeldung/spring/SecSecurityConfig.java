@@ -25,6 +25,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -52,6 +53,9 @@ public class SecSecurityConfig {
 
     @Autowired
     private AuthenticationFailureHandler authenticationFailureHandler;
+
+    @Autowired
+    private AccessDeniedHandler customAccessDeniedHandler;
 
     @Autowired
     private CustomWebAuthenticationDetailsSource authenticationDetailsSource;
@@ -88,8 +92,6 @@ public class SecSecurityConfig {
             .anonymous()
             .antMatchers("/user/updatePassword*")
             .hasAuthority("CHANGE_PASSWORD_PRIVILEGE")
-            .anyRequest()
-            .hasAuthority("READ_PRIVILEGE")
             .and()
             .formLogin()
             .loginPage("/login")
@@ -115,6 +117,15 @@ public class SecSecurityConfig {
             .deleteCookies("JSESSIONID")
             .permitAll()
             .and()
+                .authorizeRequests()
+                .mvcMatchers("/management*").hasRole("MANAGER")
+                .anyRequest()
+                .hasAuthority("READ_PRIVILEGE")
+                .and()
+                .exceptionHandling()
+                .accessDeniedHandler(customAccessDeniedHandler)
+                // .accessDeniedPage("/accessDenied.html")
+                .and()
             .rememberMe()
             .rememberMeServices(rememberMeServices())
             .key("theKey");
@@ -157,7 +168,7 @@ public class SecSecurityConfig {
     @Bean
     public RoleHierarchy roleHierarchy() {
         RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-        String hierarchy = "ROLE_ADMIN > ROLE_STAFF \n ROLE_STAFF > ROLE_USER";
+        String hierarchy = "ROLE_ADMIN > ROLE_MANAGER \n ROLE_MANAGER > ROLE_STAFF \n ROLE_STAFF > ROLE_USER";
         roleHierarchy.setHierarchy(hierarchy);
         return roleHierarchy;
     }

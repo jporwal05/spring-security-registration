@@ -16,13 +16,18 @@
 </nav>
 
     <div class="container">
-	    <div sec:authorize="hasAuthority('WRITE_PRIVILEGE')" th:utext="#{label.pages.user.message}">user</div>
-	
-	    <div sec:authorize="hasAuthority('WRITE_PRIVILEGE')" th:utext="#{label.pages.admin.message}"></div>
-	     
-	    <p th:if="${param.user} != null" th:text="${param.user[0]}">user</p>
-	     
-	    <a class="btn btn-default" th:href="@{/admin.html}" th:utext="#{label.pages.admin}">admin</a>
+        <div sec:authorize="isAuthenticated()">
+            <div sec:authorize="hasAuthority('ROLE_USER')" th:utext="#{label.pages.user.message}">user</div>
+
+            <div sec:authorize="hasAuthority('ROLE_ADMIN')" th:utext="#{label.pages.admin.message}"></div>
+
+            <div sec:authorize="hasAuthority('ROLE_MANAGER')">Welcome manager</div>
+
+            <p th:if="${param.user} != null" th:text="${param.user[0]}">user</p>
+
+            <a sec:authorize="hasAuthority('ROLE_ADMIN')" class="btn btn-default" th:href="@{/admin.html}" th:utext="#{label.pages.admin}">admin</a>
+            <a sec:authorize="hasAuthority('ROLE_MANAGER')" class="btn btn-default" th:href="@{/management.html}" th:utext="#{label.pages.manager}">manager</a>
+        </div>
 		<br /> <br />
 	    <a th:href="@{/loggedUsers}" th:utext="#{label.pages.users.message}">View logged in users</a>
 		<br />	    
